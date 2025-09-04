@@ -1,0 +1,28 @@
+{
+  "scripts": {
+    "prepare": "husky",
+    "format:frontend": "cd frontend && npm run format",
+    "format:server": "cd server && npm run format",
+    "lint:frontend": "cd frontend && eslint -c eslint.config.mjs --quiet --cache --cache-location frontend/.eslintcache $(git diff --name-only --diff-filter=ACMR HEAD -- frontend/ | xargs)",
+    "lint:server": "cd server && eslint -c eslint.config.mjs --quiet --cache --cache-location server/.eslintcache $(git diff --name-only --diff-filter=ACMR HEAD -- server/ | xargs)",
+    "type-check:frontend": "cd frontend && npm run type-check",
+    "type-check:server": "cd server && npm run type-check"
+  },
+  "lint-staged": {
+    "frontend/**/*.{md,json}": "npm run format:frontend",
+    "server/**/*.{md,json}": "npm run format:server",
+    "frontend/**/*.{js,jsx,ts,tsx}": [
+      "npm run lint:frontend",
+      "npm run format:frontend"
+    ],
+    "server/**/*.{js,ts}": [
+      "npm run lint:server",
+      "npm run format:server"
+    ]
+  },
+  "devDependencies": {
+    "eslint": "^9.30.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2"
+  }
+}

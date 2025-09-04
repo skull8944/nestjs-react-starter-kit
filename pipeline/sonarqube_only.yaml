@@ -1,0 +1,11 @@
+sonarqube-tests:
+  stage: sonarqube
+  allow_failure: true
+  trigger:
+    include:
+      - local: pipeline/lib/sonarqube_scan.yaml
+    strategy: depend
+  only:
+    refs:
+      - sonarqube
+      - chore/SonarQube

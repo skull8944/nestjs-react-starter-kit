@@ -1,0 +1,18 @@
+.containerize:
+  services:
+    - docker:dind
+  image: docker:latest
+  before_script:
+    - docker login -u "RMTOKEN" -p ${RMTOKEN} $CI_REGISTRY
+  script:
+    - cd server
+    - docker build -t ${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA} -f Dockerfile .
+    - docker tag ${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA} ${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
+    - echo ${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
+    - docker push ${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
+  tags:
+    - aws
+    - m4-large
+
+
+

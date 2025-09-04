@@ -1,0 +1,19 @@
+.hardening-scan:
+  image:
+    name: opa:latest
+    entrypoint: ["/bin/sh", "-c"]
+  variables:
+    CD_CHART_REPO: nestjs-react-starter-kit-helm
+    CD_CHART_REPO_ROOT: helm-nestjs-react-starter-kit
+    CD_GIT_REPOSITORY: ${CD_GIT_REPOSITORY}
+  script:
+    - git clone --single-branch --branch $HELM_COMMIT_BRANCH $CD_GIT_REPOSITORY
+    - echo $(/home/entrypoint.sh -d ./${CD_CHART_REPO}/${CD_CHART_REPO_ROOT} -i helm -v) > hardening-report.txt
+    - /home/entrypoint.sh -d ./${CD_CHART_REPO}/${CD_CHART_REPO_ROOT} -i helm -v
+  artifacts:
+    expire_in: 7 day
+    paths:
+      - ./hardening-report.txt
+  tags:
+    - aws
+    - m4-large

@@ -1,0 +1,34 @@
+.helm_deploy:
+  services:
+    - docker:dind
+  image: docker:latest
+  variables:
+    CD_CHART_REPO: nestjs-react-starter-kit-helm
+    CD_CHART_REPO_ROOT: helm-nestjs-react-starter-kit
+    CD_GIT_REPOSITORY: ${CD_GIT_REPOSITORY}
+  before_script:
+    - git config --global user.name "${DOCKER_USERNAME}"
+    - git config --global user.email "${DOCKER_USERNAME}"
+    - docker login -u "USER" -p ${DOCKER_PASSWORD} $CI_REGISTRY
+  script:
+    - git clone --single-branch --branch $HELM_COMMIT_BRANCH $CD_GIT_REPOSITORY
+    - cd ./$CD_CHART_REPO/$CD_CHART_REPO_ROOT
+    - docker pull ${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
+    - docker pull ${DOCKER_TERRASCAN}
+    - source ${ENV}
+    - export IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA})
+    - export TERRASCAN_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKER_TERRASCAN} )
+    - envsubst < values_template.yaml > values.yaml
+    - cat values.yaml
+    - git add .
+    - |
+      CHANGES=$(git status --porcelain | wc -l)
+      if [[ "${CHANGES}" -gt 0 ]]; then
+        echo "Committing updated appVersion to chart repo"
+        git commit -am "update image tag" && git push origin $HELM_COMMIT_BRANCH -o skip-ci
+      else
+        echo "Nothing to commit, quit the job"
+      fi
+  tags:
+    - aws
+    - m4-large

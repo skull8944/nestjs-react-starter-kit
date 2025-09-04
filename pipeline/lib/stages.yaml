@@ -1,0 +1,25 @@
+stages:
+  - dev:code
+  - dev:build
+  - dev:test
+
+  #qas
+  - qas:build
+  - qas:release
+  - qas:deploy
+  - qas:e2e
+
+  #prd
+  - prd:build
+  - prd:release
+  - prd:deploy
+
+  #merge_request
+  - mr:code
+
+  #sonarqube
+  - sonarqube
+
+  #sca
+  - sca:build
+  - sca:test

@@ -1,0 +1,86 @@
+include:
+  - pipeline/lib/stages.yaml
+  - pipeline/lib/unit_test.yaml
+  - pipeline/lib/build.yaml
+
+.only_dev_template: &only_dev
+  only:
+    refs:
+      - develop
+  except:
+    - merge_requests
+
+.dev:common:
+  variables:
+    ENV: "$QAS_ENV"
+    FE_ENV: "$QAS_FE_ENV"
+    REGISTRY_IMAGE: ${CI_REGISTRY_IMAGE}/dev
+
+# stage: dev:code
+
+dev:lint-scan:
+  stage: dev:code
+  extends:
+    - .dev:common
+  trigger:
+    include:
+      - local: pipeline/lib/lint.yaml
+    strategy: depend
+  interruptible: true
+  <<: *only_dev
+
+dev:unit-test-backend:
+  stage: dev:code
+  extends:
+    - .dev:common
+    - .unit-test-backend
+  <<: *only_dev
+
+dev:unit-test-frontend:
+  stage: dev:code
+  extends:
+    - .dev:common
+    - .unit-test-frontend
+  <<: *only_dev
+
+dev:sonarqube-report:
+  stage: dev:code
+  extends:
+    - .dev:common
+  trigger:
+    include:
+      - local: pipeline/lib/sonarqube_scan.yaml
+    strategy: depend
+  interruptible: true
+  <<: *only_dev
+
+# stage: dev:build
+
+dev:build-fullstack:
+  stage: dev:build
+  extends:
+    - .dev:common
+    - .build-fullstack
+  needs:
+    - dev:lint-scan
+    - dev:sonarqube-report
+    - dev:unit-test-frontend
+    - dev:unit-test-backend
+  <<: *only_dev
+
+# stage: dev:test
+
+dev:sonatype-scan:
+  stage: dev:test
+  extends:
+    - .dev:common
+  allow_failure: true
+  trigger:
+    include:
+      - local: pipeline/lib/sonatype_scan.yaml
+    strategy: depend
+  interruptible: true
+  variables:
+    UPSTREAM_PIPELINE_ID: $CI_PIPELINE_ID
+    DEPENDENCY_JOB: dev:build-fullstack
+  <<: *only_dev

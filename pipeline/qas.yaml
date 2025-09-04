@@ -1,0 +1,78 @@
+include:
+  - pipeline/lib/stages.yaml
+  - pipeline/lib/build.yaml
+  - pipeline/lib/containerize.yaml
+  - pipeline/lib/hardening_scan.yaml
+  - pipeline/lib/helm_deploy.yaml
+
+.only_qas_template: &only_qas
+  only:
+    refs:
+      - qas
+
+.qas:common:
+  variables:
+    ENV: "$QAS_ENV"
+    FE_ENV: "$QAS_FE_ENV"
+    REGISTRY_IMAGE: ${CI_REGISTRY_IMAGE}/qas
+    HELM_COMMIT_BRANCH: qas
+
+# stage: qas:build
+
+qas:build-fullstack:
+  stage: qas:build
+  extends:
+    - .qas:common
+    - .build-fullstack
+  <<: *only_qas
+
+# stage: qas:release
+
+qas:containerize:
+  stage: qas:release
+  extends:
+    - .qas:common
+    - .containerize
+  dependencies:
+    - qas:build-fullstack
+  <<: *only_qas
+
+# todo: move to dev after dosmm jobs being imported
+qas:security_scan:
+  stage: qas:release
+  extends:
+    - .qas:common
+  trigger:
+    include:
+      - local: pipeline/lib/security_scan.yaml
+    strategy: depend
+  needs:
+    - job: qas:containerize
+  variables:
+    DOMAIN_URL: ${DOMAIN_URL}
+  <<: *only_qas
+
+# stage: qas:deploy
+
+qas:hardening-scan:
+  stage: qas:deploy
+  extends:
+    - .qas:common
+    - .hardening-scan
+  allow_failure: true
+  <<: *only_qas
+
+qas:helm_deploy:
+  stage: qas:deploy
+  extends:
+    - .qas:common
+    - .helm_deploy
+  <<: *only_qas
+
+# qas:e2e-test:
+#   stage: qas:e2e
+#   tags:
+#     - dtmiddleware
+#     - oa-runner
+#   <<: *only_qas
+

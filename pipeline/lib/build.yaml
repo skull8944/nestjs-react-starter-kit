@@ -1,0 +1,47 @@
+.build-fullstack:
+  image: node:22.12.0-slim
+  script:
+    - echo "npm build fullstack"
+    - node -v
+    - npm -v
+
+    # FE
+    - cd frontend
+    - source ${FE_ENV}
+
+    # FE env
+    - rm -f .env
+    - touch .env
+    - export PUBLIC_VERSION_CODE=$PUBLIC_VERSION_CODE
+    - |
+      env | awk '
+        /^(PUBLIC_VERSION_CODE)=/     ||
+        /^(FRONTEND_URL)=/            ||
+        /^(API_URL)=/                 ||
+        /^(AAD_CLIENT_ID)=/           ||
+        /^(AAD_TENANT_ID)=/           ||
+        /^(MATOMO_URL)=/              ||
+        /^(MATOMO_SITE_ID)=/
+      ' >> .env
+
+    - npm i
+
+    - npm run build
+    - cp -r ./dist/* ../server/client
+
+    # BE
+    - cd ../server
+    - rm -f .env
+    - source ${ENV}
+    - npm i
+    - npm run build
+  artifacts:
+    paths:
+      - frontend
+      - server
+    expire_in: 2 hours
+  variables:
+    PUBLIC_VERSION_CODE: $CI_COMMIT_SHORT_SHA
+  tags:
+    - aws
+    - m4-large

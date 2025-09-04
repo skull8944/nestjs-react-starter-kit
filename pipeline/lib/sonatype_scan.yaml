@@ -1,0 +1,48 @@
+sonatype-scan:
+  image: sca:latest
+  allow_failure: false
+  variables:
+    SCHEDULE_JOB: sca
+    SONATYPE_FILE_EXCLUDES: "**/*.exe,**/*.zip,**/*.env"
+  script:
+    - bash /opt/add_sca_app.sh
+    - >
+      /sonatype/evaluate
+      -i ${CI_PROJECT_NAME}
+      -r ${CI_PROJECT_ID}-policy-eval-report.json
+      -e
+      -D fileExcludes="${SONATYPE_FILE_EXCLUDES}"
+      ./server
+      ./frontend
+  needs:
+    - pipeline: $UPSTREAM_PIPELINE_ID
+      job: $DEPENDENCY_JOB
+      artifacts: true
+  artifacts:
+    name: "policy-eval-report"
+    paths:
+      - "${CI_PROJECT_ID}-policy-eval-report.json"
+      - "*-policy-eval-report.html"
+    when: always
+    expire_in: 1 weeks
+  tags:
+    - sca
+
+sonatype-create-badge:
+  image: lib/sca_badge_generator:1.0
+  when: always
+  allow_failure: true
+  script:
+    - cp /app/sca_badge_generator.py ./
+    - python3 sca_badge_generator.py ${CI_PROJECT_ID}-policy-eval-report.json 7 # 產生 L7 以上的
+  needs:
+    job: sonatype-scan
+    artifacts: true
+  artifacts:
+    name: "sca-badge"
+    paths:
+        - "*.svg"
+    when: always
+    expire_in: 1 weeks
+  tags:
+    - sca

@@ -1,0 +1,32 @@
+.only_sca_template: &only_sca
+  only:
+    refs:
+      - sca
+
+.sca:common:
+  variables:
+    ENV: "$QAS_ENV"
+    FE_ENV: "$QAS_FE_ENV"
+
+include:
+  - pipeline/lib/build.yaml
+
+sca:build-fullstack:
+  stage: sca:build
+  extends:
+    - .sca:common
+    - .build-fullstack
+  <<: *only_sca
+
+sca:sonatype-scan:
+  stage: sca:test
+  extends:
+    - .sca:common
+  trigger:
+    include:
+      - local: pipeline/lib/sonatype_scan.yaml
+    strategy: depend
+  variables:
+    UPSTREAM_PIPELINE_ID: $CI_PIPELINE_ID
+    DEPENDENCY_JOB: sca:build-fullstack
+  <<: *only_sca

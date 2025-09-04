@@ -1,0 +1,33 @@
+# echo "executing pre-push hook..."
+
+# cd server
+
+# echo "executing Server Test..."
+# npm run test
+# server_test_exit_code=$?
+
+# if [ $server_test_exit_code -eq 0 ]; then
+#     echo "✅ Server Test passed"
+# else
+#     echo "❌ Server Test failed"
+#     exit 1
+# fi
+
+# cd ..
+
+# cd frontend
+
+# echo "executing Frontend Test..."
+# npm run test
+# frontend_test_exit_code=$?
+
+# if [ $frontend_test_exit_code -eq 0 ]; then
+#     echo "✅ Frontend Test passed"
+# else
+#     echo "❌ Frontend Test failed"
+#     exit 1
+# fi
+
+# cd ..
+
+# echo "✨ Pre-push hook completed! All checks passed!"

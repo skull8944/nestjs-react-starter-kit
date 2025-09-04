@@ -1,0 +1,7 @@
+include:
+  - pipeline/dev.yaml
+  - pipeline/qas.yaml
+  - pipeline/prd.yaml
+  - pipeline/merge_request.yaml
+  - pipeline/sonarqube_only.yaml
+  - pipeline/sca_only.yaml

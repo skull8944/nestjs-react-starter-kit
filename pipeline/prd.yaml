@@ -1,0 +1,76 @@
+include:
+  - pipeline/lib/stages.yaml
+  - pipeline/lib/build.yaml
+  - pipeline/lib/containerize.yaml
+  - pipeline/lib/hardening_scan.yaml
+  - pipeline/lib/helm_deploy.yaml
+
+.prd:release_build_template: &prd_rules_release_build
+  rules:
+    - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /war_room.*_prd_.*/i
+
+.prd:release_template: &prd_rules_release
+  rules:
+    - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /war_room.*_prd_.*/i
+      when: manual
+      allow_failure: true
+
+.prd:common:
+  variables:
+    ENV: "$PRD_ENV"
+    FE_ENV: "$PRD_FE_ENV"
+    REGISTRY_IMAGE: ${CI_REGISTRY_IMAGE}/prd
+    HELM_COMMIT_BRANCH: main
+
+# stage: prd:build
+
+prd:build-fullstack:
+  stage: prd:build
+  extends:
+    - .prd:common
+    - .build-fullstack
+  <<: *prd_rules_release_build
+
+# stage: prd:release
+
+prd:containerize:
+  stage: prd:release
+  extends:
+    - .prd:common
+    - .containerize
+  dependencies:
+    - prd:build-fullstack
+  <<: *prd_rules_release_build
+
+# todo: move to dev after dosmm jobs being imported
+prd:security_scan:
+  stage: prd:release
+  extends:
+    - .prd:common
+  trigger:
+    include:
+      - local: pipeline/lib/security_scan.yaml
+    strategy: depend
+  needs:
+    - job: prd:containerize
+      artifacts: false
+  variables:
+    DOMAIN_URL: ${DOMAIN_URL}
+  <<: *prd_rules_release_build
+
+# stage: prd:deploy
+
+prd:hardening-scan:
+  stage: prd:deploy
+  extends:
+    - .prd:common
+    - .hardening-scan
+  allow_failure: true
+  <<: *prd_rules_release_build
+
+prd:helm_deploy:
+  stage: prd:deploy
+  extends:
+    - .prd:common
+    - .helm_deploy
+  <<: *prd_rules_release

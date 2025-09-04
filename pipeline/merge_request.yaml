@@ -1,0 +1,37 @@
+include:
+  - pipeline/lib/stages.yaml
+  - pipeline/lib/unit_test.yaml
+
+.only_mr_template: &only_mr
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "develop"'
+      when: always
+
+.mr:common:
+  variables:
+    ENV: "$QAS_ENV"
+    FE_ENV: "$QAS_FE_ENV"
+
+mr:lint-scan:
+  stage: mr:code
+  extends:
+    - .mr:common
+  trigger:
+    include:
+      - local: pipeline/lib/lint.yaml
+    strategy: depend
+  <<: *only_mr
+
+mr:unit-test-backend:
+  stage: mr:code
+  extends:
+    - .mr:common
+    - .unit-test-backend
+  <<: *only_mr
+
+mr:unit-test-frontend:
+  stage: mr:code
+  extends:
+    - .mr:common
+    - .unit-test-frontend
+  <<: *only_mr

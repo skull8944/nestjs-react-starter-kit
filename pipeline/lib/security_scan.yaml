@@ -1,0 +1,67 @@
+stages:
+  - security_scan
+  - create_report
+
+zaproxy:
+  stage: security_scan
+  allow_failure: true
+  image: zap-scanner:latest
+  tags:
+    - dtmiddleware
+    - oa-runner
+  script:
+    - source ${ENV}
+    - mkdir /zap/wrk/
+    - export CI_ENVIRONMENT_URL=$DOMAIN_URL
+    - /zap/zap-baseline.py -t ${CI_ENVIRONMENT_URL} -r gl-dast-report.html -J gl-dast-report.json || true
+    - mkdir -p ./zap_report
+    - cp /zap/wrk/gl-dast-report.json ./zap_report || true
+    - cp /zap/wrk/gl-dast-report.html ./zap_report || true
+  artifacts:
+    paths:
+      - zap_report
+    expire_in: 1 week
+  cache:
+    paths:
+      - zap_report
+
+container_scanning:
+  stage: security_scan
+  allow_failure: true
+  image: clair-scanner:latest
+  services:
+    - docker:dind
+  variables:
+    CLAIR_ADDR: "http://127.0.0.1"
+  before_script:
+    - docker login -u "RMTOKEN" -p ${RMTOKEN} $CI_REGISTRY
+  script:
+    - docker run -d --name db clair-db:latest
+    - docker run -p 6060:6060 --link db:postgres -d --name clair clair-local-scan:latest
+    - docker pull ${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
+    - cp /home/project_dir/* ./
+    - ./clair-scanner -c http://docker:6060 --ip $(hostname -i) -r gl-sast-container-report.json -l clair.log -w clair-whitelist.yml ${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA} || true
+  artifacts:
+    paths:
+      - ./gl-sast-container-report.json
+    expire_in: 1 week
+  tags:
+    - m4-large
+    - aws
+
+create_container_status:
+  stage: create_report
+  image: container-analyze:latest
+  script:
+    - cp /home/project_dir/devops_index/status_analyze.py ./
+    - python status_analyze.py --json_path  gl-sast-container-report.json --task container -o "${CI_PROJECT_ID}_container_analyzed.json"
+    - 'curl --request PUT --upload-file "${CI_PROJECT_ID}_container_analyzed.json" "https://swpc-jira-add-on-storage-5f24a578-086c-430f-b282-598bbb54a7b6.s3-ap-northeast-1.amazonaws.com/" -H "x-amz-acl: public-read" -H "Content-Type: application/json"'
+  dependencies:
+    - "container_scanning"
+  artifacts:
+    paths:
+      - ./${CI_PROJECT_ID}_container_analyzed.json
+    expire_in: 1 weeks
+  tags:
+    - m4-large
+    - aws

@@ -1,0 +1,41 @@
+stages:
+  - lint-scan
+
+lint-frontend:
+  image: node:22.12.0-slim
+  stage: lint-scan
+  rules:
+    - when: always
+  script:
+    - cd frontend
+    - npm i -g eslint@9.17.0
+    - npm i
+    - eslint .
+    - eslint . -o ./eslint_junit.xml
+  artifacts:
+    expire_in: 7 day
+    paths:
+      - ./frontend/eslint_junit.xml
+  tags:
+  - aws
+  - m4-large
+
+
+lint-backend:
+  image: node:22.12.0-slim
+  stage: lint-scan
+  rules:
+    - when: always
+  script:
+    - cd server
+    - npm i -g eslint@9.17.0
+    - npm i
+    - eslint .
+    - eslint . -o ./eslint_junit.xml
+  artifacts:
+    expire_in: 7 day
+    paths:
+      - ./server/eslint_junit.xml
+  tags:
+  - aws
+  - m4-large

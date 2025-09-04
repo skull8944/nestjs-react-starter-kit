@@ -1,0 +1,62 @@
+# echo "executing pre-commit hook..."
+
+# echo "🔍 Running lint-staged..."
+
+# npx lint-staged --no-revert
+# lint_staged_exit_code=$?
+
+# if [ $lint_staged_exit_code -eq 0 ]; then
+#     echo "✅ All lint-staged checks passed"
+# else
+#     echo "❌ lint-staged failed"
+#     exit 1
+# fi
+
+# FRONTEND_CHANGES=$(git diff --cached --name-only -- frontend/)
+# SERVER_CHANGES=$(git diff --cached --name-only -- server/)
+
+# if [ -n "$SERVER_CHANGES" ]; then
+#     echo "checking server changes..."
+
+#     cd server
+
+#     echo "executing Server Type Check..."
+
+#     npm run type-check
+#     type_check_exit_code=$?
+
+#     if [ $type_check_exit_code -eq 0 ]; then
+#         echo "✅ Server Type Check passed"
+#     else
+#         echo "❌ Server Type Check failed"
+#         exit 1
+#     fi
+
+#     cd ..
+# else
+#     echo "⏩ no server changes, skipping server check"
+# fi
+
+# if [ -n "$FRONTEND_CHANGES" ]; then
+#     echo "checking frontend changes..."
+
+#     cd frontend
+
+#     echo "executing Frontend Type Check..."
+
+#     npm run type-check
+#     type_check_exit_code=$?
+
+#     if [ $type_check_exit_code -eq 0 ]; then
+#         echo "✅ Frontend Type Check passed"
+#     else
+#         echo "❌ Frontend Type Check failed"
+#         exit 1
+#     fi
+
+#     cd ..
+# else
+#     echo "⏩ no frontend changes, skipping frontend check"
+# fi
+
+# echo "✨ Pre-commit hook completed! All checks passed!"

@@ -1,0 +1,44 @@
+.unit-test-backend:
+  image: node:22.12.0-slim
+  script:
+    - export TZ=Asia/Taipei
+    - date
+    - cd server
+    - npm i
+    - source ${ENV}
+    - npm run test || true
+  tags:
+    - aws
+    - m4-large
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - server/coverage
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - server/coverage/locv.info
+
+.unit-test-frontend:
+  image: node:22.12.0-slim
+  script:
+    - export TZ=Asia/Taipei
+    - date
+    - apt-get update
+    - apt-get install -y git
+    - cd frontend
+    - npm i
+    - npm run test || true
+  tags:
+    - aws
+    - m4-large
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - frontend/coverage
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - frontend/coverage/locv.info
