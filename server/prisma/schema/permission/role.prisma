@@ -1,0 +1,17 @@
+model Role {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  name        String  @db.VarChar(255)
+  description String? @db.VarChar(255)
+
+  accounts AccountRole[]
+  menus    RoleMenu[]
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  createdBy String?  @map("created_by") @db.VarChar(255)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  updatedBy String?  @map("updated_by") @db.VarChar(255)
+
+  @@map("role")
+  @@schema("permission")
+}

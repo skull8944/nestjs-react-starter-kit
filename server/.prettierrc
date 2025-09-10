@@ -1,0 +1,21 @@
+{
+  "singleQuote": true,
+  "printWidth": 100,
+
+  "importOrder": [
+    "^reflect-metadata",
+    "^dotenv",
+    "^@nestjs/(.*)$",
+    "^@prisma/(.*)$",
+    "^[a-zA-Z]",
+    "/core/",
+    "/modules/",
+    "^@/(.*)$",
+    "^../(.*)$",
+    "^./(.*)$"
+  ],
+  "importOrderSortSpecifiers": true,
+  "importOrderSeparation": true,
+  "importOrderParserPlugins": ["typescript", "decorators-legacy"],
+  "plugins": ["@trivago/prettier-plugin-sort-imports"]
+}

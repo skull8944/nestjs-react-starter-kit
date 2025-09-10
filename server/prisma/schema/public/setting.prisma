@@ -1,0 +1,12 @@
+model Setting {
+  key         String  @id @db.Text
+  isEnabled   Boolean @default(true)
+  description String? @db.Text
+  value1      Json    @db.JsonB
+  value2      Json?   @db.JsonB
+  value3      Json?   @db.JsonB
+
+  @@index([key], name: "setting_key_idx")
+  @@map("setting")
+  @@schema("public")
+}

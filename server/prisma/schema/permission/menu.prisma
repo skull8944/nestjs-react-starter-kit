@@ -1,0 +1,34 @@
+model Menu {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  index    Int      @map("index") @db.SmallInt
+  type     MenuType @map("type")
+  // = frontend url
+  key      String   @map("path") @db.VarChar(255)
+  title    String   @map("title") @db.VarChar(255)
+  label    String   @map("label") @db.VarChar(255)
+  disabled Boolean  @default(false) @map("disabled")
+
+  parentId String? @map("parent_id") @db.Uuid
+  parent   Menu?   @relation("MenuParent", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  children Menu[]  @relation("MenuParent")
+
+  roles RoleMenu[]
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  createdBy String?  @map("created_by") @db.VarChar(255)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  updatedBy String?  @map("updated_by") @db.VarChar(255)
+
+  @@map("menu")
+  @@schema("permission")
+}
+
+enum MenuType {
+  Directory
+  Page
+  Feature
+
+  @@map("menu_type")
+  @@schema("permission")
+}

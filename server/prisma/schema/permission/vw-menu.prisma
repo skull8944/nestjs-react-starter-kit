@@ -1,0 +1,37 @@
+// WITH RECURSIVE menu_recursive
+// AS (
+//   SELECT m.*,
+//     m."index"::TEXT AS depth_path,
+//     NULL::int4 as parent_index
+//   FROM permission.menu m
+//   WHERE m.parent_id IS NULL -- root
+//   UNION ALL
+//   SELECT m.*,
+//     CONCAT (
+//       r.depth_path,
+//       '-',
+//       m."index"
+//       ) AS depth_path,
+//     r."index" as parent_index
+//   FROM permission.menu m
+//   INNER JOIN menu_recursive r ON m.parent_id = r.id
+//   )
+// SELECT *
+// FROM menu_recursive m
+// ORDER BY m.parent_index NULLS FIRST, m."index"
+
+view VwMenu {
+	id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+	index Int @map("index") @db.SmallInt
+	type MenuType @map("type")
+	key String @map("path") @db.VarChar(255)
+	title String @map("title") @db.VarChar(255)
+	label String @map("label") @db.VarChar(255)
+	disabled Boolean @default(false) @map("disabled")
+	parentId String? @map("parent_id") @db.Uuid
+	depthPath String? @map("depth_path") @db.Text
+	parentIndex Int? @map("parent_index") @db.Integer
+
+	@@map("vw_menu")
+	@@schema("permission")
+}

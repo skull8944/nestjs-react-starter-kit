@@ -1,0 +1,16 @@
+model Account {
+  emplid   String  @id @db.VarChar(11)
+  name     String  @db.VarChar(255)
+  email    String  @db.VarChar(255)
+  disabled Boolean @map("disabled")
+
+  roles AccountRole[]
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  createdBy String?  @map("created_by") @db.VarChar(255)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  updatedBy String?  @map("updated_by") @db.VarChar(255)
+
+  @@map("account")
+  @@schema("public")
+}

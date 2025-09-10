@@ -1,0 +1,27 @@
+{
+  "moduleFileExtensions": ["ts", "tsx", "js", "json"],
+  "transform": {
+    "^.+\\.(t|j)sx?$": "<rootDir>/node_modules/ts-jest"
+  },
+  "testRegex": "server/src/.*\\.(test|spec).(ts|tsx|js)$",
+  "collectCoverageFrom": [
+    "src/**/*.{service,factory,strategy}.ts",
+    "!src/core/database/**",
+    "!src/core/azure/**",
+    "!src/core/mail/**",
+    "!src/modules/task/task.service.ts",
+    "!src/modules/job/job.service.ts",
+    "!src/app.service.ts"
+  ],
+  "coverageReporters": [
+    "json",
+    ["lcov", { "projectRoot": "./" }],
+    "text",
+    "clover"
+  ],
+  "collectCoverage": true,
+  "coverageDirectory": "coverage",
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/src/$1"
+  }
+}

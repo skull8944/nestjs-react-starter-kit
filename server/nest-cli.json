@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "plugins": ["@nestjs/swagger"],
+    "assets": [
+      {
+        "include": "core/mail/templates/**/*",
+        "outDir": "dist"
+      },
+      {
+        "include": "**/mail-templates/**/*",
+        "outDir": "dist"
+      }
+    ]
+  }
+}
