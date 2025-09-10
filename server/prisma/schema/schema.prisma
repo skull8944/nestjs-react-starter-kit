@@ -1,11 +1,11 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters", "views", "relationJoins"]
-  binaryTargets   = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
+  binaryTargets   = ["native"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("dbConnectionString")
-  schemas  = ["public", "permission"]
+  schemas  = ["public", "permission", "job"]
 }

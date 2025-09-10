@@ -11,7 +11,7 @@ export class MenuRepository extends BaseRepository<'menu' | 'vwMenu'> {
   }
 
   public findVwMenu(args?: Prisma.VwMenuFindManyArgs) {
-    return this.db.vwMenu.findMany(args);
+    return this.db.vwMenu.findMany();
   }
 
   private get joinAllAccountMenuSql() {

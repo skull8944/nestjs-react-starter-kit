@@ -14,6 +14,11 @@ declare namespace NodeJS {
     aadClientSecret: string;
 
     SERVER_TYPE: 'web' | 'job';
+
+    REDIS_HOST: string;
+    REDIS_PORT: string | number;
+    redisPassword: string;
+
     [key]: string;
   }
 }
