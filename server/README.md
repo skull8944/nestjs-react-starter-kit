@@ -167,7 +167,7 @@ docker run -p 8080:8080 nestjs-starter
 - 角色定義與管理
 - 選單權限控制
 - 使用者-角色關聯
-- 詳細說明請參閱 [權限模組文檔](/src/modules/permission/README.md)
+- 詳細說明請參閱 [權限模組文檔](/server/src/modules/permission/README.md)
 
 ### 設定模組 (Setting)
 
