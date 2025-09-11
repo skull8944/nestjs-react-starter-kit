@@ -4,6 +4,14 @@
 
 排程系統是基於 NestJS 框架的一個可靠、高效的任務排程模組，利用 BullMQ 進行任務佇列管理。此系統提供了定時執行任務、任務管理、執行歷史追蹤等功能，支援 cron 表達式來定義任務執行的時間間隔。
 
+### 系統組件
+
+- **JobScheduler**: 負責定期檢查排程任務並將符合執行條件的任務加入佇列
+- **JobDispatcher**: 負責從佇列取出任務並執行，記錄執行歷史
+- **JobService**: 包含實際業務邏輯實現的方法
+- **JobController**: 提供 API 端點用於手動觸發任務
+- **JobScheduleRepository/JobHistoryRepository**: 處理資料存取
+
 ### 主要功能
 
 - **排程任務定義**：使用 cron 表達式設定任務執行時間
@@ -19,7 +27,7 @@
 
 ```mermaid
 flowchart TB
-    A[Cron Trigger] -->|每分鐘執行| B[JobService.enqueueJobs]
+    A[Cron Trigger] -->|每分鐘執行| B[JobScheduler.enqueueJobs]
     B -->|檢查活躍的排程| C[JobScheduleRepository]
     C -->|返回排程列表| B
     B -->|根據 cron 表達式計算| D{是否需要執行?}
@@ -41,31 +49,32 @@ flowchart TB
 ```mermaid
 sequenceDiagram
     participant Cron as Cron Scheduler
-    participant JS as JobService
+    participant JSch as JobScheduler
     participant JQ as BullMQ Queue
     participant JD as JobDispatcher
     participant JH as JobHistoryRepo
     participant JS2 as JobScheduleRepo
     participant HTTP as HttpService
     participant JC as JobController
-    
-    Cron->>JS: 每分鐘觸發 enqueueJobs()
-    JS->>JS2: 查詢活躍的排程
-    JS2-->>JS: 返回排程列表
+    participant JS as JobService
+  
+    Cron->>JSch: 每分鐘觸發 enqueueJobs()
+    JSch->>JS2: 查詢活躍的排程
+    JS2-->>JSch: 返回排程列表
     loop 每個排程
-        JS->>JS: 解析 cron 表達式
-        JS->>JS: 檢查是否需要執行
+        JSch->>JSch: 解析 cron 表達式
+        JSch->>JSch: 檢查是否需要執行
         opt 需要執行
-            JS->>JQ: addBulk 批次加入佇列
+            JSch->>JQ: addBulk 批次加入佇列
         end
     end
-    
+  
     JQ->>JD: 觸發任務處理
     JD->>JS2: 獲取完整任務資訊
     JS2-->>JD: 返回任務詳情
     JD->>JH: 創建執行歷史記錄
     JH-->>JD: 返回歷史記錄
-    
+  
     JD->>HTTP: 通過 HTTP 調用執行任務
     HTTP->>JC: POST /v1/job/call-job
     JC->>JS: callJob(methodName, param)
@@ -73,7 +82,7 @@ sequenceDiagram
     JS-->>JC: 返回結果
     JC-->>HTTP: 返回 HTTP 響應
     HTTP-->>JD: 返回任務執行結果
-    
+  
     alt 成功執行
         JD->>JH: 更新為成功狀態
     else 執行失敗
@@ -98,7 +107,7 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+  
     JobHistory {
         int id PK
         string jobName
@@ -108,10 +117,10 @@ erDiagram
         datetime startAt
         datetime endAt
     }
-    
+  
     JobSchedule ||--o{ JobHistory : "執行產生"
     JobHistory }o--|| JobStatus : "狀態"
-    
+  
     JobStatus {
         enum PROCESSING
         enum SUCCESS
