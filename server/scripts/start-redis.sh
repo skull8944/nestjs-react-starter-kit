@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Pull the latest redis image
-source .env
+source ../.env
 
 docker pull redis
 
