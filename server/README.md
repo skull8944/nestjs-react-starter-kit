@@ -110,6 +110,7 @@ server/
 │   ├── modules/            # 功能模組
 │   │   ├── account/        # 帳號管理
 │   │   ├── auth/           # 身份驗證
+│   │   ├── job/            # 排程系統
 │   │   ├── permission/     # 權限管理
 │   │   └── setting/        # 系統設定
 │   ├── types/              # TypeScript 類型定義
@@ -173,6 +174,15 @@ docker run -p 8080:8080 nestjs-starter
 
 - 系統設定管理
 - 全域參數配置
+
+### 排程系統 (Job)
+
+- 基於 BullMQ 的任務佇列管理
+- Cron 表達式排程任務
+- 任務優先級和超時控制
+- 失敗重試機制
+- 執行歷史追蹤
+- 詳細說明請參閱 [排程系統文檔](/server/src/modules/job/README.md)
 
 ## 貢獻指南
 
