@@ -1,8 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Injectable, Logger, Scope } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
-import type { JobSchedule } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 
 import { Job } from 'bullmq';
@@ -11,9 +10,10 @@ import { firstValueFrom } from 'rxjs';
 
 import { DateUtil } from '@/utils/date';
 
-import { JobHistoryRepository, JobScheduleRepository } from './repositories';
+import { JobHistoryRepository } from './repositories';
+import type { JobQueueData } from './types';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 @Processor('job')
 export class JobDispatcher extends WorkerHost {
   private readonly logger = new Logger(JobDispatcher.name);
@@ -21,19 +21,16 @@ export class JobDispatcher extends WorkerHost {
   constructor(
     private readonly httpService: HttpService,
     private readonly jobHistoryRepo: JobHistoryRepository,
-    private readonly jobScheduleRepo: JobScheduleRepository,
   ) {
     super();
   }
 
-  async process(job: Job<Pick<JobSchedule, 'id' | 'jobName' | 'param'>>) {
-    const { jobName, param, id } = job.data;
+  async process(job: Job<JobQueueData>) {
+    const { id, jobName, param, timeout } = job.data;
 
     this.logger.log(`Processing job ${job.id}: ${jobName}`);
 
     // 獲取完整的任務資訊 (包括優先級和超時設定等)
-    const jobSchedule = await this.jobScheduleRepo.findById(id);
-    const timeout = jobSchedule?.timeout || 300000; // 預設5分鐘超時
 
     const startAt = DateUtil.getNowDayjs().toDate();
     const jobHistory = await this.jobHistoryRepo.create({

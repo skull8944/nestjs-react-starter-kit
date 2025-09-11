@@ -1,6 +1,7 @@
 import { Injectable, Scope } from '@nestjs/common';
 
-import { BaseRepository, TransactionScope } from '../../core/database';
+import { BaseRepository } from '../../core/database/base-repository';
+import { TransactionScope } from '../../core/database/transaction-scope';
 
 import { SettingKey } from './setting-key';
 

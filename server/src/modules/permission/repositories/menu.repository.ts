@@ -2,7 +2,8 @@ import { Injectable, Scope } from '@nestjs/common';
 
 import type { Prisma } from '@prisma/client';
 
-import { BaseRepository, TransactionScope } from '../../../core/database';
+import { BaseRepository } from '../../../core/database/base-repository';
+import { TransactionScope } from '../../../core/database/transaction-scope';
 
 @Injectable({ scope: Scope.REQUEST })
 export class MenuRepository extends BaseRepository<'menu' | 'vwMenu'> {

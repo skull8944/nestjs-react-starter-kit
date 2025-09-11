@@ -1,4 +1,5 @@
 import { HttpModule } from '@nestjs/axios';
+import { BullModule } from '@nestjs/bullmq';
 import { CacheModule } from '@nestjs/cache-manager';
 import { MiddlewareConsumer, Module, ModuleMetadata, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -16,6 +17,7 @@ import { AccountModule } from './modules/account/account.module';
 import { AuthModule } from './modules/auth/auth.module';
 import msalConfig from './modules/auth/config/msal.config';
 import jobConfig from './modules/job/config/job.config';
+import { JobModule } from './modules/job/job.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { SettingModule } from './modules/setting/setting.module';
 
@@ -24,44 +26,40 @@ import { AppService } from './app.service';
 import ApiLoggerMiddleware from './middleware/api-logger.middleware';
 import type { AllConfig } from './types/all-config.type';
 
-const jobModules: ModuleMetadata['imports'] = [];
-if (process.env.SERVER_TYPE === 'job') {
-  import('@nestjs/bullmq').then((m) => {
-    jobModules.push(
-      m.BullModule.forRootAsync({
-        useFactory: (configService: ConfigService<AllConfig>) => ({
-          connection: {
-            host: configService.get('redis.host', { infer: true }),
-            port: configService.get('redis.port', { infer: true }),
-            password: configService.get('redis.password', { infer: true }),
-            // 增加前綴，避免與其他應用程序衝突
-            prefix: configService.get('job.redisPrefix', { infer: true }),
-          },
-          // 增加全局默認設定
-          defaultJobOptions: {
-            attempts: 3,
-            backoff: {
-              type: 'exponential',
-              delay: 1000,
+const jobModules: ModuleMetadata['imports'] =
+  process.env.SERVER_TYPE === 'job'
+    ? [
+        ScheduleModule.forRoot(),
+
+        BullModule.forRootAsync({
+          useFactory: (configService: ConfigService<AllConfig>) => ({
+            connection: {
+              host: configService.get('redis.host', { infer: true }),
+              port: configService.get('redis.port', { infer: true }),
+              password: configService.get('redis.password', { infer: true }),
+              // 增加前綴，避免與其他應用程序衝突
+              prefix: configService.get('job.redisPrefix', { infer: true }),
             },
-            removeOnComplete: { count: 1000 }, // 保留最近1000個完成的作業記錄
-            removeOnFail: { count: 5000 }, // 保留最近5000個失敗的作業記錄
-          },
+            // 增加全局默認設定
+            defaultJobOptions: {
+              attempts: 3,
+              backoff: {
+                type: 'exponential',
+                delay: 1000,
+              },
+              removeOnComplete: { count: 1000 }, // 保留最近1000個完成的作業記錄
+              removeOnFail: { count: 5000 }, // 保留最近5000個失敗的作業記錄
+            },
+          }),
+          inject: [ConfigService],
         }),
-        inject: [ConfigService],
-      }),
-    );
 
-    // 增加隊列配置
-    jobModules.push(
-      m.BullModule.registerQueue({
-        name: 'job',
-      }),
-    );
-  });
+        // 增加隊列配置
+        BullModule.registerQueue({ name: 'job' }),
 
-  import('./modules/job/job.module').then((m) => jobModules.push(m.JobModule));
-}
+        JobModule,
+      ]
+    : [];
 
 @Module({
   imports: [

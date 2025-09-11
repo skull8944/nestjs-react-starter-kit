@@ -1,23 +1,15 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { Prisma } from '@prisma/client';
 
-import { BaseRepository, TransactionScope } from '../../../core/database';
+import { PrismaService } from '../../../core/database/prisma.service';
 
-@Injectable({ scope: Scope.REQUEST })
-export class JobScheduleRepository extends BaseRepository<'jobSchedule'> {
-  constructor(protected readonly ts: TransactionScope) {
-    super(ts);
-  }
+@Injectable()
+export class JobScheduleRepository {
+  constructor(private readonly db: PrismaService) {}
 
   public find(args: Prisma.JobScheduleFindManyArgs) {
     return this.db.jobSchedule.findMany(args);
-  }
-
-  public findById(id: string) {
-    return this.db.jobSchedule.findUnique({
-      where: { id },
-    });
   }
 
   public edit(id: string, data: Prisma.JobScheduleUpdateInput) {

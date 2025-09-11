@@ -1,14 +1,12 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { Prisma } from '@prisma/client';
 
-import { BaseRepository, TransactionScope } from '../../../core/database';
+import { PrismaService } from '../../../core/database/prisma.service';
 
-@Injectable({ scope: Scope.REQUEST })
-export class JobHistoryRepository extends BaseRepository<'jobHistory'> {
-  constructor(protected readonly ts: TransactionScope) {
-    super(ts);
-  }
+@Injectable()
+export class JobHistoryRepository {
+  constructor(private readonly db: PrismaService) {}
 
   public async create(data: Prisma.JobHistoryCreateInput) {
     return this.db.jobHistory.create({ data });

@@ -1,25 +1,16 @@
-import { Controller, Get, InternalServerErrorException, Logger, Param } from '@nestjs/common';
+import { Controller, Get, Logger, Param } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
 
-import lodash from 'lodash';
-import * as os from 'os';
-
-import { PrismaService } from './core/database';
-
-import { SettingKey } from './modules/setting/setting-key';
-import { SettingService } from './modules/setting/setting.service';
-
-import { AppService } from './app.service';
+import { PrismaService } from './core/database/prisma.service';
 
 @Controller()
 export class AppController {
-  private logger = new Logger(AppController.name);
+  private readonly logger = new Logger(AppController.name);
+
   constructor(
-    private readonly appService: AppService,
     private readonly prismaService: PrismaService,
-    private readonly settingService: SettingService,
-    private health: HealthCheckService,
+    private readonly health: HealthCheckService,
   ) {}
 
   @Get('/health')
