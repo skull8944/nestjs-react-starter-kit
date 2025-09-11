@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-import { PermissionService } from '../../src/modules/permission/permission.service';
+import { PermissionService } from '../modules/permission/permission.service';
 
 const prisma = new PrismaClient();
 

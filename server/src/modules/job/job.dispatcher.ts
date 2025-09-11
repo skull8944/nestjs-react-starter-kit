@@ -1,5 +1,3 @@
-import '@primsa/client';
-
 import { HttpService } from '@nestjs/axios';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Injectable, Logger, Scope } from '@nestjs/common';

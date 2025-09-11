@@ -29,7 +29,7 @@
     "prisma:deploy": "npx prisma migrate deploy",
     "prisma:pull": "npx prisma db pull",
     "prisma:generate": "npx prisma generate",
-    "seed": "ts-node prisma/seed/permission.ts",
+    "seed": "ts-node ./src/seeds/permission.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

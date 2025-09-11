@@ -28,5 +28,5 @@
       "@/*": ["src/*"],
     }
   },
-  "include": ["jest.config.json", "eslint.config.mjs", "tsconfig.json", "src/", "enum","test/", "prisma/seed"],
+  "include": ["jest.config.json", "eslint.config.mjs", "tsconfig.json", "src/", "enum","test/"],
 }
